@@ -110,6 +110,11 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, error) {
 	var status *embed
 	switch build.Status {
+	case cbpb.Build_WORKING:
+		status = &embed{
+			Title: "🔨 BUILDING",
+			Color: 1027128,
+		}
 	case cbpb.Build_SUCCESS:
 		status = &embed{
 			Title: "✅ SUCCESS",
