@@ -108,7 +108,7 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 }
 
 func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, error) {
-	var status *embed
+	var embeds []embed
 
 	sourceText := ""
 	sourceRepo := build.Source.GetRepoSource()
@@ -118,41 +118,39 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 
 	switch build.Status {
 	case cbpb.Build_WORKING:
-		status = &embed{
+		embeds = append(embeds, embed{
 			Title: "🔨 BUILDING",
 			Color: 1027128,
-		}
+		})
 	case cbpb.Build_SUCCESS:
-		status = &embed{
+		embeds = append(embeds, embed{
 			Title: "✅ SUCCESS",
 			Color: 1127128,
-		}
+		})
 	case cbpb.Build_FAILURE, cbpb.Build_INTERNAL_ERROR, cbpb.Build_TIMEOUT:
-		status = &embed{
+		embeds = append(embeds, embed{
 			Title: fmt.Sprintf("❌ ERROR - %s", build.Status),
 			Color: 14177041,
-		}
+		},
+			embed{
+				Title:       "Log",
+				Description: build.LogUrl,
+			},
+		)
 	default:
 		log.Infof("Unknown status %s", build.Status)
 	}
-	if status != nil && len(sourceText) > 0 {
-		status.Description = sourceText
+
+	if len(embeds) > 0 && len(sourceText) > 0 {
+		embeds[0].Description = sourceText
 	}
 
-	if status == nil {
+	if len(embeds) == 0 {
 		log.Infof("unhandled status - skipping notification %s", build.Status)
 		return nil, nil
 	}
 
-	res := discordMessage{
-		Embeds: []embed{
-			*status,
-			{
-				Title:       "Log",
-				Description: build.LogUrl,
-			},
-		},
-	}
-
-	return &res, nil
+	return &discordMessage{
+		Embeds: embeds,
+	}, nil
 }

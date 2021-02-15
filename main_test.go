@@ -27,10 +27,6 @@ func TestBuildMessage(t *testing.T) {
 			{Title: "✅ SUCCESS",
 				Color: 1127128,
 			},
-			{
-				Title:       "Log",
-				Description: b.LogUrl,
-			},
 		},
 	})
 
