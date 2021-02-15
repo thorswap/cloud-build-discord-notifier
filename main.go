@@ -41,8 +41,15 @@ type discordNotifier struct {
 	webhookURL string
 }
 
+type embed struct {
+	Title       string `json:"title"`
+	Color       int    `json:"color"`
+	Description string `json:"description"`
+}
+
 type discordMessage struct {
-	Content string `json:"content"`
+	Content string  `json:"content"`
+	Embeds  []embed `json:"embeds"`
 }
 
 func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg notifiers.SecretGetter, _ notifiers.BindingResolver) error {
@@ -81,6 +88,9 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 	if err != nil {
 		return fmt.Errorf("failed to write discord message: %w", err)
 	}
+	if msg == nil {
+		return nil
+	}
 
 	payload, err := json.Marshal(msg)
 	if err != nil {
@@ -98,30 +108,35 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 }
 
 func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, error) {
-	txt := fmt.Sprintf(
-		"Cloud Build (%s, %s): %s",
-		build.ProjectId,
-		build.Id,
-		build.Status,
-	)
-
-	var clr string
+	var status *embed
 	switch build.Status {
 	case cbpb.Build_SUCCESS:
-		clr = "good"
+		status = &embed{
+			Title: "✅ SUCCESS",
+			Color: 1127128,
+		}
 	case cbpb.Build_FAILURE, cbpb.Build_INTERNAL_ERROR, cbpb.Build_TIMEOUT:
-		clr = "danger"
+		status = &embed{
+			Title: fmt.Sprintf("❌ ERROR - %s", build.Status),
+			Color: 14177041,
+		}
 	default:
-		clr = "warning"
+		log.Infof("Unknown status %s", build.Status)
 	}
 
-	logURL, err := notifiers.AddUTMParams(build.LogUrl, notifiers.ChatMedium)
-	if err != nil {
-		return nil, fmt.Errorf("failed to add UTM params: %w", err)
+	if status == nil {
+		log.Infof("unhandled status - skipping notification %s", build.Status)
+		return nil, nil
 	}
 
 	res := discordMessage{
-		Content: fmt.Sprintf("%s %s %s", clr, txt, logURL),
+		Embeds: []embed{
+			*status,
+			{
+				Title:       "Log",
+				Description: build.LogUrl,
+			},
+		},
 	}
 
 	return &res, nil

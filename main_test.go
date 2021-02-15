@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -21,11 +22,21 @@ func TestBuildMessage(t *testing.T) {
 		t.Fatalf("writeMessage failed: %v", err)
 	}
 
-	want := &discordMessage{
-		Content: "good Cloud Build (my-project-id, some-build-id): SUCCESS https://some.example.com/log/url?foo=bar&utm_campaign=google-cloud-build-notifiers&utm_medium=chat&utm_source=google-cloud-build",
-	}
+	want, _ := json.Marshal(discordMessage{
+		Embeds: []embed{
+			{Title: "✅ SUCCESS",
+				Color: 1127128,
+			},
+			{
+				Title:       "Log",
+				Description: b.LogUrl,
+			},
+		},
+	})
 
-	if diff := cmp.Diff(got.Content, want.Content); diff != "" {
+	gotJSON, _ := json.Marshal(got)
+
+	if diff := cmp.Diff(gotJSON, want); diff != "" {
 		t.Errorf("writeMessage got unexpected diff: %s", diff)
 	}
 }
