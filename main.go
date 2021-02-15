@@ -112,8 +112,9 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 
 	sourceText := ""
 	sourceRepo := build.Source.GetRepoSource()
+	log.Infof("repo info %+v", sourceRepo)
 	if sourceRepo != nil {
-		sourceText = sourceRepo.RepoName
+		sourceText = sourceRepo.GetRepoName()
 	}
 
 	switch build.Status {
