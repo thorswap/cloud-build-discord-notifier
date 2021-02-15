@@ -109,6 +109,13 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 
 func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, error) {
 	var status *embed
+
+	sourceText := ""
+	sourceRepo := build.Source.GetRepoSource()
+	if sourceRepo != nil {
+		sourceText = sourceRepo.RepoName
+	}
+
 	switch build.Status {
 	case cbpb.Build_WORKING:
 		status = &embed{
@@ -127,6 +134,9 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 		}
 	default:
 		log.Infof("Unknown status %s", build.Status)
+	}
+	if status != nil && len(sourceText) > 0 {
+		status.Description = sourceText
 	}
 
 	if status == nil {
