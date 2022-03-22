@@ -1,4 +1,5 @@
 // Copyright 2020 Google LLC
+// (modified in 2022 for thorswap)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,10 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/GoogleCloudPlatform/cloud-build-notifiers/lib/notifiers"
-	log "github.com/golang/glog"
 	cbpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
 
@@ -83,7 +84,7 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 		return nil
 	}
 
-	log.Infof("sending discord webhook for Build %q (status: %q)", build.Id, build.Status)
+	log.Printf("sending discord webhook for Build %q (status: %q)", build.Id, build.Status)
 	msg, err := s.buildMessage(build)
 	if err != nil {
 		return fmt.Errorf("failed to write discord message: %w", err)
@@ -97,12 +98,12 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 		return fmt.Errorf("Unable to marshal payload %w", err)
 	}
 
-	log.Infof("sending payload %s", string(payload))
+	log.Printf("sending payload %s", string(payload))
 	resp, err := http.Post(s.webhookURL, "application/json", bytes.NewBuffer(payload))
 	if err != nil {
 		return err
 	}
-	log.Infof("got resp %+v", resp)
+	log.Printf("got resp %+v", resp)
 
 	return nil
 }
@@ -112,7 +113,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 
 	sourceText := ""
 	sourceRepo := build.Source.GetRepoSource()
-	log.Infof("repo info %+v", sourceRepo)
+	log.Printf("repo info %+v", sourceRepo)
 	if sourceRepo != nil {
 		sourceText = sourceRepo.GetRepoName()
 	}
@@ -139,7 +140,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 			},
 		)
 	default:
-		log.Infof("Unknown status %s", build.Status)
+		log.Printf("Unknown status %s", build.Status)
 	}
 
 	if len(embeds) > 0 && len(sourceText) > 0 {
@@ -147,7 +148,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	}
 
 	if len(embeds) == 0 {
-		log.Infof("unhandled status - skipping notification %s", build.Status)
+		log.Printf("unhandled status - skipping notification %s", build.Status)
 		return nil, nil
 	}
 

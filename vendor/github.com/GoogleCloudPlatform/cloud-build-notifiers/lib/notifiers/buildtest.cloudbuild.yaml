@@ -1,0 +1,10 @@
+# Build and test lib/notifiers.
+steps:
+- name: gcr.io/cloud-builders/docker
+  args:
+  - build
+  - --file=./lib/notifiers/Dockerfile
+  - '.'
+
+tags:
+- cloud-build-notifiers-lib-notifiers
