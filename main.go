@@ -77,8 +77,6 @@ func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg n
 	}
 	s.webhookURL = wu
 
-	s.sendTestMsg(ctx)
-
 	return nil
 }
 
