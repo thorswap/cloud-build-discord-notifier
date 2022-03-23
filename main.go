@@ -76,6 +76,8 @@ func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg n
 	}
 	s.webhookURL = wu
 
+	s.sendTestMsg(ctx)
+
 	return nil
 }
 
@@ -155,4 +157,25 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	return &discordMessage{
 		Embeds: embeds,
 	}, nil
+}
+
+func (s *discordNotifier) sendTestMsg(ctx context.Context) error {
+	var msg = embed{
+		Title: "✅ Discord Bot Started",
+		Color: 1127128,
+	}
+
+	payload, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("Unable to marshal payload %w", err)
+	}
+
+	log.Printf("sending payload %s", string(payload))
+	resp, err := http.Post(s.webhookURL, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	log.Printf("got resp %+v", resp)
+
+	return nil
 }

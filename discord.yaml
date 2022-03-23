@@ -23,5 +23,5 @@ spec:
         secretRef: webhook-url
   secrets:
   - name: webhook-url
-    value: projects/<project_ID>/secrets/<secret-name>/versions/latest
+    value: projects/thorswap-devops/secrets/discord-example-webhook/versions/latest
 
