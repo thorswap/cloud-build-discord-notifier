@@ -49,8 +49,9 @@ type embed struct {
 }
 
 type discordMessage struct {
-	Content string  `json:"content"`
-	Embeds  []embed `json:"embeds"`
+	Username string  `json:"username"`
+	Content  string  `json:"content"`
+	Embeds   []embed `json:"embeds"`
 }
 
 func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg notifiers.SecretGetter, _ notifiers.BindingResolver) error {
@@ -120,10 +121,12 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 		sourceText = sourceRepo.GetRepoName()
 	}
 
+	log.Printf("%+v", build)
+
 	switch build.Status {
 	case cbpb.Build_WORKING:
 		embeds = append(embeds, embed{
-			Title: "🔨 BUILDING",
+			Title: "🔨 BUILDING" + build.GetName(),
 			Color: 1027128,
 		})
 	case cbpb.Build_SUCCESS:
@@ -155,34 +158,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	}
 
 	return &discordMessage{
-		Embeds: embeds,
+		Username: "Cloud Build Notifier",
+		Embeds:   embeds,
 	}, nil
-}
-
-func (s *discordNotifier) sendTestMsg(ctx context.Context) error {
-
-	var embeds []embed
-
-	embeds = append(embeds, embed{
-		Title: "✅ Discord Bot Started",
-		Color: 1127128,
-	})
-
-	msg := &discordMessage{
-		Embeds: embeds,
-	}
-
-	payload, err := json.Marshal(msg)
-	if err != nil {
-		return fmt.Errorf("Unable to marshal payload %w", err)
-	}
-
-	log.Printf("sending payload %s", string(payload))
-	resp, err := http.Post(s.webhookURL, "application/json", bytes.NewBuffer(payload))
-	if err != nil {
-		return err
-	}
-	log.Printf("got resp %+v", resp)
-
-	return nil
 }
