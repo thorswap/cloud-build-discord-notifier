@@ -160,6 +160,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 }
 
 func (s *discordNotifier) sendTestMsg(ctx context.Context) error {
+
 	var embeds []embed
 
 	embeds = append(embeds, embed{
