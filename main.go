@@ -160,10 +160,12 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 }
 
 func (s *discordNotifier) sendTestMsg(ctx context.Context) error {
-	var msg = embed{
+	var msg []embed
+
+	msg = append(msg, embed{
 		Title: "✅ Discord Bot Started",
 		Color: 1127128,
-	}
+	})
 
 	payload, err := json.Marshal(msg)
 	if err != nil {
