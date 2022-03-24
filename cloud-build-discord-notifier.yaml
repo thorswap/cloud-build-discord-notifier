@@ -18,7 +18,7 @@ metadata:
   name: build-cloud-build-discord-notifier
 spec:
   notification:
-    filter: build.substitutions["_SERVICE_NAME"] == "monolith-dev" || build.substitutions["_SERVICE_NAME"] == "monolith-stage"
+    filter: build.substitutions["_SERVICE_NAME"] == "cloud-build-discord-notifier"
     delivery:
       webhookUrl:
         secretRef: webhook-url
