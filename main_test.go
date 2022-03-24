@@ -25,7 +25,7 @@ func TestBuildMessage(t *testing.T) {
 	want, _ := json.Marshal(discordMessage{
 		Username: "Cloud Build Notifier",
 		Embeds: []embed{
-			{Title: "✅ SUCCESS",
+			{Title: "✅ SUCCESS ",
 				Color: 1127128,
 			},
 		},
