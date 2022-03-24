@@ -120,16 +120,14 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	}
 
 	log.Printf("%+v", build)
-	repo := build.Substitutions["REPO_NAME"]
-	log.Printf("%+v", build.Substitutions)
-
+	repoName := build.Substitutions["REPO_NAME"]
 	svcName := build.Substitutions["_SERVICE_NAME"]
-	log.Printf("%+v", build.Substitutions)
+	log.Printf("Triggered from repo, service: %v, %v", repoName, svcName)
 
 	switch build.Status {
 	case cbpb.Build_WORKING:
 		embeds = append(embeds, embed{
-			Title: "🔨 BUILDING " + repo,
+			Title: "🔨 BUILDING " + svcName,
 			Color: 1027128,
 		})
 	case cbpb.Build_SUCCESS:
@@ -139,7 +137,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 		})
 	case cbpb.Build_FAILURE, cbpb.Build_INTERNAL_ERROR, cbpb.Build_TIMEOUT:
 		embeds = append(embeds, embed{
-			Title: fmt.Sprintf("❌ ERROR - %s", build.Status),
+			Title: fmt.Sprintf("❌ ERROR on %s - %s", svcName, build.Status),
 			Color: 14177041,
 		},
 			embed{
