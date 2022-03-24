@@ -120,11 +120,13 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	}
 
 	log.Printf("%+v", build)
+	repo := build.Substitutions["REPO_NAME"]
+	log.Printf("%+v", build.Substitutions)
 
 	switch build.Status {
 	case cbpb.Build_WORKING:
 		embeds = append(embeds, embed{
-			Title: "🔨 BUILDING" + build.GetName(),
+			Title: "🔨 BUILDING " + repo,
 			Color: 1027128,
 		})
 	case cbpb.Build_SUCCESS:
