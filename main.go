@@ -162,5 +162,4 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 		Username: "Cloud Build Notifier",
 		Embeds:   embeds,
 	}, nil
-
 }
