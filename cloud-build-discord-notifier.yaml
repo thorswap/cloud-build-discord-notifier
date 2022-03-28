@@ -22,6 +22,9 @@ spec:
         cloud-build-discord-notifier:
           webhookUrl:
             secretRef: webhook-url
+        cloud-build-xchain-monolith:
+          webhookUrl:
+            secretRef: webhook-url
   secrets:
   - name: webhook-url
     value: projects/thorswap-devops/secrets/discord-example-webhook/versions/latest

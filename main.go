@@ -67,14 +67,12 @@ func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg n
 
 	s.urls = make(map[string]string)
 	for k, v := range cfg.Spec.Notification.Delivery {
-		log.Printf("Found %s: %s", k, v)
+		log.Printf("Found entry for service %s", k)
 
 		notification := make(map[string]interface{})
 		for nk, nv := range v.(map[interface{}]interface{}) {
-			log.Printf("nk: %s", nk)
 			notification[fmt.Sprintf("%v", nk)] = nv
 		}
-		log.Printf("Notification: %v", notification)
 		wuRef, err := notifiers.GetSecretRef(notification, webhookURLSecretName)
 		if err != nil {
 			return fmt.Errorf("failed to get Secret ref from delivery config (%v) field %q: %w", cfg.Spec.Notification.Delivery, webhookURLSecretName, err)
@@ -88,23 +86,8 @@ func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg n
 			return fmt.Errorf("failed to get token secret: %w", err)
 		}
 
-		log.Printf("Setting %s, %s", k, wu)
 		s.urls[k] = wu
 	}
-
-	//wuRef, err := notifiers.GetSecretRef(cfg.Spec.Notification.Delivery, webhookURLSecretName)
-	//if err != nil {
-	//	return fmt.Errorf("failed to get Secret ref from delivery config (%v) field %q: %w", cfg.Spec.Notification.Delivery, webhookURLSecretName, err)
-	//}
-	//wuResource, err := notifiers.FindSecretResourceName(cfg.Spec.Secrets, wuRef)
-	//if err != nil {
-	//	return fmt.Errorf("failed to find Secret for ref %q: %w", wuRef, err)
-	//}
-	//wu, err := sg.GetSecret(ctx, wuResource)
-	//if err != nil {
-	//	return fmt.Errorf("failed to get token secret: %w", err)
-	//}
-	//s.webhookURL = wu
 
 	return nil
 }
