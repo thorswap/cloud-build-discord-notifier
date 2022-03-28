@@ -40,6 +40,8 @@ func main() {
 type discordNotifier struct {
 	filter     notifiers.EventFilter
 	webhookURL string
+
+	urls map[string]string
 }
 
 type embed struct {
@@ -63,19 +65,46 @@ func (s *discordNotifier) SetUp(ctx context.Context, cfg *notifiers.Config, sg n
 		s.filter = prd
 	}
 
-	wuRef, err := notifiers.GetSecretRef(cfg.Spec.Notification.Delivery, webhookURLSecretName)
-	if err != nil {
-		return fmt.Errorf("failed to get Secret ref from delivery config (%v) field %q: %w", cfg.Spec.Notification.Delivery, webhookURLSecretName, err)
+	s.urls = make(map[string]string)
+	for k, v := range cfg.Spec.Notification.Delivery {
+		log.Printf("Found %s: %s", k, v)
+
+		notification := make(map[string]interface{})
+		for nk, nv := range v.(map[interface{}]interface{}) {
+			log.Printf("nk: %s", nk)
+			notification[fmt.Sprintf("%v", nk)] = nv
+		}
+		log.Printf("Notification: %v", notification)
+		wuRef, err := notifiers.GetSecretRef(notification, webhookURLSecretName)
+		if err != nil {
+			return fmt.Errorf("failed to get Secret ref from delivery config (%v) field %q: %w", cfg.Spec.Notification.Delivery, webhookURLSecretName, err)
+		}
+		wuResource, err := notifiers.FindSecretResourceName(cfg.Spec.Secrets, wuRef)
+		if err != nil {
+			return fmt.Errorf("failed to find Secret for ref %q: %w", wuRef, err)
+		}
+		wu, err := sg.GetSecret(ctx, wuResource)
+		if err != nil {
+			return fmt.Errorf("failed to get token secret: %w", err)
+		}
+
+		log.Printf("Setting %s, %s", k, wu)
+		s.urls[k] = wu
 	}
-	wuResource, err := notifiers.FindSecretResourceName(cfg.Spec.Secrets, wuRef)
-	if err != nil {
-		return fmt.Errorf("failed to find Secret for ref %q: %w", wuRef, err)
-	}
-	wu, err := sg.GetSecret(ctx, wuResource)
-	if err != nil {
-		return fmt.Errorf("failed to get token secret: %w", err)
-	}
-	s.webhookURL = wu
+
+	//wuRef, err := notifiers.GetSecretRef(cfg.Spec.Notification.Delivery, webhookURLSecretName)
+	//if err != nil {
+	//	return fmt.Errorf("failed to get Secret ref from delivery config (%v) field %q: %w", cfg.Spec.Notification.Delivery, webhookURLSecretName, err)
+	//}
+	//wuResource, err := notifiers.FindSecretResourceName(cfg.Spec.Secrets, wuRef)
+	//if err != nil {
+	//	return fmt.Errorf("failed to find Secret for ref %q: %w", wuRef, err)
+	//}
+	//wu, err := sg.GetSecret(ctx, wuResource)
+	//if err != nil {
+	//	return fmt.Errorf("failed to get token secret: %w", err)
+	//}
+	//s.webhookURL = wu
 
 	return nil
 }
@@ -99,8 +128,14 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 		return fmt.Errorf("Unable to marshal payload %w", err)
 	}
 
+	svcName := build.Substitutions["_SERVICE_NAME"]
+	url, ok := s.urls[svcName]
+	if !ok {
+		return fmt.Errorf("Failed to find delivery URL for service %v", svcName)
+	}
+
 	log.Printf("sending payload %s", string(payload))
-	resp, err := http.Post(s.webhookURL, "application/json", bytes.NewBuffer(payload))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(payload))
 	if err != nil {
 		return err
 	}
