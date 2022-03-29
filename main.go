@@ -114,7 +114,10 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 	svcName := build.Substitutions["_SERVICE_NAME"]
 	url, ok := s.urls[svcName]
 	if !ok {
-		return fmt.Errorf("Failed to find delivery URL for service %v", svcName)
+		url, ok = s.urls["default"]
+		if !ok {
+			return fmt.Errorf("failed to find delivery URL for service %v and no default provided", svcName)
+		}
 	}
 
 	log.Printf("sending payload %s", string(payload))
