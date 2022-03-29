@@ -133,13 +133,6 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, error) {
 	var embeds []embed
 
-	sourceText := ""
-	sourceRepo := build.Source.GetRepoSource()
-	log.Printf("repo info %+v", sourceRepo)
-	if sourceRepo != nil {
-		sourceText = sourceRepo.GetRepoName()
-	}
-
 	log.Printf("%+v", build)
 	repoName := build.Substitutions["REPO_NAME"]
 	svcName := build.Substitutions["_SERVICE_NAME"]
@@ -170,8 +163,8 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 		log.Printf("Unknown status %s", build.Status)
 	}
 
-	if len(embeds) > 0 && len(sourceText) > 0 {
-		embeds[0].Description = sourceText
+	if len(embeds) > 0 && len(repoName) > 0 {
+		embeds[0].Description = fmt.Sprintf("Source repo: %v", repoName)
 	}
 
 	if len(embeds) == 0 {
