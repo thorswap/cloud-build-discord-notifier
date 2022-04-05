@@ -135,6 +135,8 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 
 	log.Printf("%+v", build)
 	repoName := build.Substitutions["REPO_NAME"]
+	triggerName := build.Substitutions["TRIGGER_NAME"]
+	projectID := build.Substitutions["PROJECT_ID"]
 	svcName := build.Substitutions["_SERVICE_NAME"]
 	log.Printf("Triggered from repo, service: %v, %v", repoName, svcName)
 
@@ -164,7 +166,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	}
 
 	if len(embeds) > 0 && len(repoName) > 0 {
-		embeds[0].Description = fmt.Sprintf("Source repo: %v", repoName)
+		embeds[0].Description = fmt.Sprintf("Source repo: %v\nTrigger: %v/%v", repoName, projectID, triggerName)
 	}
 
 	if len(embeds) == 0 {
