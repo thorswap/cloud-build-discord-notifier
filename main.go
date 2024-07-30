@@ -140,9 +140,9 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 	log.Printf("%+v", build)
 	repoName := build.Substitutions["REPO_NAME"]
 	triggerName := build.Substitutions["TRIGGER_NAME"]
-	projectID := build.Substitutions["PROJECT_ID"]
+	projectID := build.ProjectId
 	svcName := build.Substitutions["_SERVICE_NAME"]
-	log.Printf("Triggered from repo, service: %v, %v", repoName, svcName)
+	log.Printf("Triggered from repo, service, project: %v, %v, %v", repoName, svcName, projectID)
 
 	switch build.Status {
 	case cbpb.Build_WORKING:
