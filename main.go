@@ -22,15 +22,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/GoogleCloudPlatform/cloud-build-notifiers/lib/notifiers"
 	cbpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
 
 const (
-	webhookURLSecretName = "webhookUrl"
-	swapkitAPIDevProject = "swapkit-api-dev"
-	discordUserToMention = "olegpetrov" // Replace with the actual Discord user ID
+	webhookURLSecretName    = "webhookUrl"
+	swapkitAPIProjectPrefix = "swapkit-api"
+	discordUserToMention    = "olegpetrov" // Replace with the actual Discord user ID
 )
 
 func main() {
@@ -166,7 +167,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 		)
 
 		// Add @mention for failed builds in swapkit-api-dev project
-		if projectID == swapkitAPIDevProject {
+		if strings.HasPrefix(projectID, swapkitAPIProjectPrefix) {
 			content = fmt.Sprintf("<@%s> Build failed for %s in %s", discordUserToMention, svcName, projectID)
 		}
 	default:
