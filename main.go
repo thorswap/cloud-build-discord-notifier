@@ -29,6 +29,8 @@ import (
 
 const (
 	webhookURLSecretName = "webhookUrl"
+	swapkitAPIDevProject = "swapkit-api-dev"
+	discordUserToMention = "olegpetrov" // Replace with the actual Discord user ID
 )
 
 func main() {
@@ -132,6 +134,7 @@ func (s *discordNotifier) SendNotification(ctx context.Context, build *cbpb.Buil
 
 func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, error) {
 	var embeds []embed
+	var content string
 
 	log.Printf("%+v", build)
 	repoName := build.Substitutions["REPO_NAME"]
@@ -161,6 +164,11 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 				Description: build.LogUrl,
 			},
 		)
+
+		// Add @mention for failed builds in swapkit-api-dev project
+		if projectID == swapkitAPIDevProject {
+			content = fmt.Sprintf("<@%s> Build failed for %s in %s", discordUserToMention, svcName, projectID)
+		}
 	default:
 		log.Printf("Unknown status %s", build.Status)
 	}
@@ -176,6 +184,7 @@ func (s *discordNotifier) buildMessage(build *cbpb.Build) (*discordMessage, erro
 
 	return &discordMessage{
 		Username: "Cloud Build Notifier",
+		Content:  content,
 		Embeds:   embeds,
 	}, nil
 
