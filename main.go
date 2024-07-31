@@ -31,7 +31,7 @@ import (
 const (
 	webhookURLSecretName    = "webhookUrl"
 	swapkitAPIProjectPrefix = "swapkit-api"
-	discordUserToMention    = "olegpetrov" // Replace with the actual Discord user ID
+	discordUserToMention    = "816849636601888800" // Replace with the actual Discord user ID
 )
 
 func main() {
